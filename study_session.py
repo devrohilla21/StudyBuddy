@@ -29,17 +29,6 @@ class StudySession:
            formated = str(self.duration_).split(".")
            return f"Total Duration: {formated[0]}"
 
-#for object creation 
-# subject = StudySession(subject= "Math")
-
-# subject.timer_start()
-# while input("Press Enter When to stop : ") != "":
-#     pass
-# subject.timer_stop()
-# print()
-# print(subject.duration())
-# print()
-# print(subject.print_start_and_stop_time())
 
 class Tracker:
     def __init__(self):
@@ -48,59 +37,45 @@ class Tracker:
     def add_session(self,subjectsession):
         self.session.append(subjectsession)
         
-tracker = Tracker() #permanent object of Tracker class so we can use it later to call class1 objects
-
-is_running = True
-while is_running:
-    session_name = input("Enter Subject name and type 'exit' for exit : ").strip()
-    if session_name == "exit":
-        break
+    def grand_duration(self):
+        total_duration = datetime.timedelta()
+        total_subs = 0
+        for session in self.session:
+            total_duration += session.duration_
+            total_subs += 1   
+        return f"Grand Duration of all {total_subs} Subjects: {str(total_duration).split('.')[0]}"
         
-    session_ = StudySession(subject= session_name)
-    session_.timer_start()
-    while input("Press Enter to stop the time: ") != "":
-        pass
-    session_.timer_stop()
+
+
+def main():
     
-    tracker.add_session(session_)
+    tracker = Tracker() #permanent object of Tracker class so we can use it later to call class1 objects
+    
+    while True:
+        session_name = input("Enter Subject name and type 'exit' for exit : ").strip()
+        if session_name == "exit":
+            break
+            
+        session_ = StudySession(subject= session_name)
+        session_.timer_start()
+        while input("Press Enter to stop the time: ") != "":
+            pass
+        session_.timer_stop()
+        
+        tracker.add_session(session_)
 
-for session in tracker.session:
-    print(f"Subject name : {session.subject}\n{session.duration()}")
+    for session in tracker.session:
+        print(f"Subject name : {session.subject}\n{session.duration()}")
+    
+    print(tracker.grand_duration())
+
+main()
+
+
+
+
     
     
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-# s1 = StudySession("Math")
-# s1.timer_start()
-# while input("Press Enter to stop the time: ") != "":
-#     pass
-# s1.timer_stop()
-
-# s2 = StudySession("Physics")
-# s2.timer_start()
-# while input("Press Enter to stop the time: ") != "":
-#     pass
-# s2.timer_stop()
-
-# tracker = Tracker()
-# tracker.add_session(s1)
-# tracker.add_session(s2)
-    
-# for session in tracker.session:
-#     print(f"s_name = {session.subject}, duration = {session.duration()}")
 
 
 
