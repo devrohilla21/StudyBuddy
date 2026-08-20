@@ -44,7 +44,17 @@ class Tracker:
             total_duration += session.duration_
             total_subs += 1   
         return f"Grand Duration of all {total_subs} Subjects: {str(total_duration).split('.')[0]}"
+    
+    def target_duration(self,target_subject:str):
         
+        duration = datetime.timedelta()
+        for session in self.session:
+            if target_subject == session.subject: 
+                duration += session.duration_ 
+        if duration == datetime.timedelta():
+            return f"You didnt study yet this {target_subject} subject"
+        return f"Total duration of {target_subject} subject : {str(duration).split('.')[0]}"
+         
 
 
 def main():
@@ -65,10 +75,11 @@ def main():
         tracker.add_session(session_)
 
     for session in tracker.session:
-        print(f"Subject name : {session.subject}\n{session.duration()}")
+        print(f"Subject name : {session.subject}\n{session.duration()} approx")
     
     print(tracker.grand_duration())
 
+    print(tracker.target_duration(target_subject="english"))
 main()
 
 
