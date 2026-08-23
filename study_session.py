@@ -1,7 +1,7 @@
 import time 
 import datetime
 import sys
-
+import json
 
 class StudySession:
     def __init__(self, subject: str):
@@ -18,17 +18,24 @@ class StudySession:
     def timer_stop(self):
         print("Server Message <-- Timer Stops")
         self.end_time = datetime.datetime.now()
-        
+        self.duration_ = self.end_time - self.start_time
         
     
     def print_start_and_stop_time(self):
         return f"Start Time: {self.start_time.strftime("%I:%M %p %B %Y")}\nEnd Time: {self.end_time.strftime("%I:%M %p %B %Y")}"
     
     def duration(self):
-           self.duration_ = self.end_time - self.start_time
            formated = str(self.duration_).split(".")
-           return f"Total Duration: {formated[0]}"
-
+           return {formated[0]}
+    
+    def to_dict(self):
+        dic = {
+            "subject" : self.subject,
+            "start_time": self.start_time.strftime("%H:%M:%S %B %Y"),
+            "end_time": self.end_time.strftime("%H:%M:%S %B %Y"),
+            "duration": str(self.duration_).split(".")[0]
+        }
+        return dic
 
 class Tracker:
     def __init__(self):
@@ -52,7 +59,16 @@ class Tracker:
             if target_subject == session.subject: 
                 duration += session.duration_ 
         return f"Total duration of {target_subject} subject : {str(duration).split('.')[0]}"
-    
+    def save_to_file(self):
+        data_list = []
+        for session in self.session:
+            data_list.append(session.to_dict())
+        
+        #saving file 
+        filename = f"Session_{datetime.datetime.now().strftime("%d_%B_%y_%I_%M %p")}.json" # whenever we run the porgram the file cant overlap one into another so i decided to put date or time on it so we know that the session by their file name and our data remains protected from overlaping
+        with open(filename,"w") as f:
+            json.dump(data_list,f, indent=4)
+                
 def show_menu():
     print("-------------------------------------")
     print("| 1. Start new session              |")
@@ -61,6 +77,12 @@ def show_menu():
     print("| 4. Exit                           |")    
     print("-------------------------------------")
 
+# test run that our to_dict method is working or not
+# subject = StudySession(subject="english")
+# subject.timer_start()
+# time.sleep(10)
+# subject.timer_stop()
+# print(subject.to_dict())
 
 
 def main():
@@ -74,7 +96,7 @@ def main():
                 raise ValueError
             
         except ValueError:
-            print("ERROR REASON: Enter a number Between 1 to 4")
+            print("ERROR REASON: Number Out of Range")
         else:
             a = "."
             sys.stdout.write("Server Message <-- Initializing")
@@ -139,80 +161,10 @@ def main():
             else:
                 print("THANKS TO RUN THIS PROGRAM")
                 is_running = False
+    if len(tracker.session) != 0:
+        tracker.save_to_file()
        
 main()  
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-#     while True:
-#         session_name = input("Enter Subject name and type 'exit' for exit : ").strip()
-#         if session_name == "exit":
-#             break
-            
-#         session_ = StudySession(subject= session_name)
-#         session_.timer_start()
-#         while input("Press Enter to stop the time: ") != "":
-#             pass
-#         session_.timer_stop()
-        
-#         tracker.add_session(session_)
-
-#     for session in tracker.session:
-#         print(f"Subject name : {session.subject}\n{session.duration()} approx")
-    
-#     print(tracker.grand_duration())
-
-#     print(tracker.target_duration(target_subject="english"))
-# main()
-
-
-
-
-    
-    
-
-
-
-
-
-
-
-
-
