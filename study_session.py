@@ -31,12 +31,12 @@ class StudySession:
     def to_dict(self):
         dic = {
             "subject" : self.subject,
-            "start_time": self.start_time.strftime("%H:%M:%S %B %Y"),
-            "end_time": self.end_time.strftime("%H:%M:%S %B %Y"),
+            "start_time": self.start_time.strftime("%H:%M:%S %d %B %Y"),
+            "end_time": self.end_time.strftime("%H:%M:%S %d %B %Y"),
             "duration": str(self.duration_).split(".")[0]
         }
         return dic
-
+ 
 class Tracker:
     def __init__(self):
         self.session = []
@@ -59,6 +59,7 @@ class Tracker:
             if target_subject == session.subject: 
                 duration += session.duration_ 
         return f"Total duration of {target_subject} subject : {str(duration).split('.')[0]}"
+    
     def save_to_file(self):
         data_list = []
         for session in self.session:
@@ -68,7 +69,59 @@ class Tracker:
         filename = f"Session_{datetime.datetime.now().strftime("%d_%B_%y_%I_%M %p")}.json" # whenever we run the porgram the file cant overlap one into another so i decided to put date or time on it so we know that the session by their file name and our data remains protected from overlaping
         with open(filename,"w") as f:
             json.dump(data_list,f, indent=4)
+            
+    def history(self):
+        data = []
+        for session in self.session:
+            data.append(session.to_dict())
                 
+        try:
+            with open("history.json","r") as f:
+                load  = json.load(f) 
+            
+        except FileNotFoundError:
+            load = []
+                
+        for ses in data:
+            load.append(ses)
+                
+        with open("history.json", "w") as f:
+            json.dump(load,f,indent=4)
+    
+    def overwrite_file_save(self):
+        data = []
+        
+        for session in self.session:
+            data.append(session.to_dict())
+        
+        with open("history.json","w") as f:
+            json.dump(data,f,indent=4)
+            
+    def to_load_obj(self):
+        try:
+            
+            with open("history.json","r") as f:
+                load = json.load(f)
+               
+            for rowindict in load:
+                data = StudySession(subject=rowindict["subject"])
+                    
+                data.start_time = datetime.datetime.strptime(rowindict["start_time"],"%H:%M:%S %d %B %Y")
+                    
+                data.end_time = datetime.datetime.strptime(rowindict["end_time"],"%H:%M:%S %d %B %Y")
+                    
+                h,m,s = map(int,rowindict["duration"].split(":"))
+                data.duration_ = datetime.timedelta(hours=h,minutes=m,seconds=s)
+
+                self.session.append(data)
+                
+        except FileNotFoundError:
+            pass # becz file not even exist so how do we take data and put in self.session()
+        except json.JSONDecodeError:
+            pass
+        except json.decoder.JSONDecodeError:
+            pass
+            
 def show_menu():
     print("-------------------------------------")
     print("| 1. Start new session              |")
@@ -88,6 +141,7 @@ def show_menu():
 def main():
     tracker = Tracker() #permanent object of Tracker class so we can use it later to call class1 objects
     is_running = True
+    tracker.to_load_obj()
     while is_running:
         try:
             show_menu()
@@ -162,7 +216,7 @@ def main():
                 print("THANKS TO RUN THIS PROGRAM")
                 is_running = False
     if len(tracker.session) != 0:
-        tracker.save_to_file()
+        tracker.overwrite_file_save()
        
 main()  
     
