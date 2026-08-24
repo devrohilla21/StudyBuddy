@@ -1,0 +1,44 @@
+# Study Buddy
+ 
+## The Story Behind This Project
+ 
+From the age of 12, I was always looking for a study partner who would study with me. When I started coding, at first look it was cool, but after a while it started getting boring, and then I decided to look for an online buddy who would solve questions with me and fix bugs together. I needed a team — that's what I was looking for. I looked everywhere it could be possible to find one: I searched on the internet, joined Reddit groups, Discord, and all over around — and after wasting an entire year or more than a year, my mind moved from studies to video games.
+ 
+When I tried to study again, it felt overwhelming. I made so many attempts, but nothing worked for me. I tried to start from the basics all over again, but I lost my energy and motivation after 2-3 days of work. Then I decided to change something in my life — I quit gaming and started the journey again from scratch. I decided to build an app that helps others in their studies, so they don't have to look around for a study partner and can just study instead.
+ 
+## Purpose of the Project
+ 
+This will help every student, no matter what they are studying for, in every situation. You can:
+- Create a study session
+- See when a session started, ended, and its total duration
+- View the full log/history of all sessions you've created in the past
+In the future, more interesting features will be added to boost your progress in your study sessions.
+ 
+## Features
+ 
+- Session tracking with start/stop timer
+- Automatic duration calculation
+- Full session history log
+- Subject-wise duration tracking
+- JSON-based persistence (your progress is saved between runs)
+## Tech Stack
+ 
+- Python
+- Object-Oriented Programming (OOP)
+- JSON for data persistence
+## How to Use
+ 
+The mechanism behind this is very simple, and anyone can run this program — the terminal interface is straightforward. When you run the program, it will ask you to choose an option by typing a number from 1 to 4:
+ 
+1. **Start a new session** — Type your session name (most probably your subject), and the timer will start. To stop the timer, simply press the Enter key. Repeat this process to add more sessions.
+2. **View all session log/history** — Shows the full log/history of all your sessions.
+3. **View subject total duration** — A list of subjects will appear on your screen; type the subject name from the list, and it will show you the total duration for that subject.
+4. **Exit** — Stops the program and saves your progress.
+Your session progress is automatically saved in a JSON file (`history.json`).
+ 
+## Conclusion
+ 
+I don't want the life I lived to be the life others live. :_)
+ 
+Good luck.
+ 
