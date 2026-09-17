@@ -3,7 +3,7 @@ import datetime
 import sys
 import json
 
-class StudySession:
+class StudySession: # this class make objects for every session 
     def __init__(self, subject: str):
         self.subject = subject
         self.start_time = None 
@@ -21,12 +21,9 @@ class StudySession:
         self.duration_ = self.end_time - self.start_time
         
     
-    def print_start_and_stop_time(self):
-        return f"Start Time: {self.start_time.strftime("%I:%M %p %B %Y")}\nEnd Time: {self.end_time.strftime("%I:%M %p %B %Y")}"
-    
     def duration(self):
            formated = str(self.duration_).split(".")
-           return {formated[0]}
+           return formated[0]
     
     def to_dict(self):
         dic = {
@@ -60,34 +57,6 @@ class Tracker:
                 duration += session.duration_ 
         return f"Total duration of {target_subject} subject : {str(duration).split('.')[0]}"
     
-    def save_to_file(self):
-        data_list = []
-        for session in self.session:
-            data_list.append(session.to_dict())
-        
-        #saving file 
-        filename = f"Session_{datetime.datetime.now().strftime("%d_%B_%y_%I_%M %p")}.json" # whenever we run the porgram the file cant overlap one into another so i decided to put date or time on it so we know that the session by their file name and our data remains protected from overlaping
-        with open(filename,"w") as f:
-            json.dump(data_list,f, indent=4)
-            
-    def history(self):
-        data = []
-        for session in self.session:
-            data.append(session.to_dict())
-                
-        try:
-            with open("history.json","r") as f:
-                load  = json.load(f) 
-            
-        except FileNotFoundError:
-            load = []
-                
-        for ses in data:
-            load.append(ses)
-                
-        with open("history.json", "w") as f:
-            json.dump(load,f,indent=4)
-    
     def overwrite_file_save(self):
         data = []
         
@@ -117,8 +86,6 @@ class Tracker:
                 
         except FileNotFoundError:
             pass # becz file not even exist so how do we take data and put in self.session()
-        except json.JSONDecodeError:
-            pass
         except json.decoder.JSONDecodeError:
             pass
             
@@ -127,7 +94,8 @@ def show_menu():
     print("| 1. Start new session              |")
     print("| 2. View all sessions log          |")
     print("| 3. View subject total duration    |")
-    print("| 4. Exit                           |")    
+    print("| 4. View grand total               |")
+    print("| 5. Exit                           |")    
     print("-------------------------------------")
 
 # test run that our to_dict method is working or not
@@ -146,7 +114,7 @@ def main():
         try:
             show_menu()
             user = int(input("--> Enter 1/2/3/4 to perform task : "))
-            if user >4 or user <1:
+            if user >5 or user <1:
                 raise ValueError
             
         except ValueError:
@@ -155,7 +123,7 @@ def main():
             a = "."
             sys.stdout.write("Server Message <-- Initializing")
             sys.stdout.flush()
-            for i in range(3):
+            for _ in range(3):
                 sys.stdout.write(f"{a}")
                 sys.stdout.flush()
                 time.sleep(0.5)
@@ -164,12 +132,14 @@ def main():
             if user == 1:   
                     print("------------------------------- 1. Add Session Window -------------------------------------")
                     session_name = input("--> Enter Subject name : ").strip().lower()
+                    if session_name in ["b","back"]:
+                        print("Server Message <-- Back Operation Performed")
+                        continue
                     session = StudySession(subject=session_name)
                     session.timer_start()
                     input("--> Do anything to stop the session: ")
                     
                     session.timer_stop()
-                    session.duration()
                     
                     #adding obj of class 1 into class2 
                     tracker.add_session(subjectsession=session)
@@ -206,15 +176,28 @@ def main():
                             
                     print()        
                     search = input("--> Enter subject name to view duration : ").strip().lower()
+                    if search in ["b","back"]:
+                        print("Server Message <-- Back Operation Performed")
+                        continue
+                    back = False
                     while search not in subjects:
+                        if search in ["b","back"]:
+                            print("Server Message <-- Back Operation Performed")
+                            back = True
+                            break
                         print(f"Server Message <-- {search} Not found")
                         search = input("--> Enter subject name to view duration : ").strip().lower()
-                    
+                    if back :
+                        continue
                     print(tracker.target_duration(target_subject=search))
                     print("x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x")
+            elif user == 4:
+                print(tracker.grand_duration())
+            
             else:
                 print("THANKS TO RUN THIS PROGRAM")
                 is_running = False
+                
     if len(tracker.session) != 0:
         tracker.overwrite_file_save()
        
