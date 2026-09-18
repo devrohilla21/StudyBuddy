@@ -47,7 +47,7 @@ class Tracker:
         for session in self.session:
             total_duration += session.duration_
             total_subs += 1   
-        return f"Grand Duration of all {total_subs} Subjects: {str(total_duration).split('.')[0]}"
+        return total_subs,total_duration
     
     def target_duration(self,target_subject:str):
         
@@ -55,7 +55,7 @@ class Tracker:
         for session in self.session:
             if target_subject == session.subject: 
                 duration += session.duration_ 
-        return f"Total duration of {target_subject} subject : {str(duration).split('.')[0]}"
+        return duration
     
     def overwrite_file_save(self):
         data = []
@@ -90,13 +90,13 @@ class Tracker:
             pass
             
 def show_menu():
-    print("-------------------------------------")
-    print("| 1. Start new session              |")
-    print("| 2. View all sessions log          |")
-    print("| 3. View subject total duration    |")
-    print("| 4. View grand total               |")
-    print("| 5. Exit                           |")    
-    print("-------------------------------------")
+    print("----------------------------------------")
+    print("| 1. Start New Session                 |")
+    print("| 2. View All Sessions Log             |")
+    print("| 3. View Subject Total Duration       |")
+    print("| 4. View Grand Duration               |")
+    print("| 5. Exit                              |")    
+    print("----------------------------------------")
 
 # test run that our to_dict method is working or not
 # subject = StudySession(subject="english")
@@ -131,7 +131,7 @@ def main():
             
             if user == 1:   
                     print("------------------------------- 1. Add Session Window -------------------------------------")
-                    session_name = input("--> Enter Subject name : ").strip().lower()
+                    session_name = input("--> Enter Subject name : ").strip().capitalize()
                     if session_name in ["b","back"]:
                         print("Server Message <-- Back Operation Performed")
                         continue
@@ -175,7 +175,7 @@ def main():
                             sys.stdout.flush()
                             
                     print()        
-                    search = input("--> Enter subject name to view duration : ").strip().lower()
+                    search = input("--> Enter subject name to view duration : ").strip().capitalize()
                     if search in ["b","back"]:
                         print("Server Message <-- Back Operation Performed")
                         continue
@@ -186,22 +186,29 @@ def main():
                             back = True
                             break
                         print(f"Server Message <-- {search} Not found")
-                        search = input("--> Enter subject name to view duration : ").strip().lower()
+                        search = input("--> Enter subject name to view duration : ").strip().capitalize()
                     if back :
                         continue
-                    print(tracker.target_duration(target_subject=search))
+                    
+                    print(f"Session Name : {search}")
+                    print(f"Total Duration : {tracker.target_duration(target_subject=search)}")
                     print("x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x")
             elif user == 4:
-                print(tracker.grand_duration())
-            
+                print("------------------------------- 4. View Grand Duration Window -------------------------------------")
+                
+                index, duration = tracker.grand_duration()
+                print(f"Total Numbers of Session : {index}")
+                print(f"Grand Duration of all Session : {str(duration).split('.')[0]}")
+                print("-------------------------------------------------------------------------------------------")
+                
             else:
                 print("THANKS TO RUN THIS PROGRAM")
                 is_running = False
                 
     if len(tracker.session) != 0:
         tracker.overwrite_file_save()
-       
-main()  
+if __name__ == "__main__":       
+    main()  
     
     
     
