@@ -36,6 +36,7 @@ if "tracker" not in st.session_state:
 
 if "first_time" not in st.session_state:
     st.session_state.first_time = True
+    
 if st.session_state.first_time:
     st.session_state.tracker.to_load_obj() #in each click the entire code get rerun and then it load obj again and again in st.session_state.tracker.sesison
     st.session_state.first_time = False # hahahhah 
@@ -49,33 +50,19 @@ if st.button("Submit"):  #button for submittion update chocie in every click
 if st.session_state.choice == "Add New Session": #1
     st.write("#### Add New Session")
     
-    if "notdisable" not in st.session_state:
-        st.session_state.notdisable = True
-    
-    if st.session_state.notdisable:
+    if "is_active" not in st.session_state:
+        st.session_state.is_active = False
+        
+    if not st.session_state.is_active:
         session_name = st.text_input("Session Name",placeholder= "Like English, Physics",disabled=False).strip().capitalize()
-    
     else:
-        session_name = st.text_input("Session Name",placeholder= "Like English, Physics",disabled=True).strip().capitalize()
-        
-    if session_name != "": 
-        
-        if 'result' not in st.session_state:        
-            st.session_state.result = True
-            
-        if not st.session_state.result:
-            if "obj" not in st.session_state:
-                st.session_state.obj = StudySession(subject=session_name)
-            else:
-                st.session_state.obj.subject = session_name
-        
-        
+        session_name = st.text_input("Session Name",placeholder= "Like English, Physics",value=st.session_state.obj.subject,disabled=True,).strip().capitalize()
 
-        ### temp code 
-
-        if "is_active" not in st.session_state:
-            st.session_state.is_active = False
     
+    if session_name != "":
+         
+        # if 'result' not in st.session_state:        
+        #     st.session_state.result = True
 
         if st.session_state.is_active:
             st.write("Status : Running ")
@@ -85,44 +72,21 @@ if st.session_state.choice == "Add New Session": #1
                 st .session_state.tracker.add_session(subjectsession=st.session_state.obj)
                 del st.session_state.obj
                 st.session_state.tracker.overwrite_file_save()
-                st.session_state.result = False
-                st.session_state.notdisable = True
+                # st.session_state.result = False
                 st.rerun()
 
         else:
-            if st.session_state.result :
+            if not st.session_state.is_active : ## result 
                 st.write("Status : Not Started")
-            else:
-                st.write("Status : Stopped")
+                
             if st.button("Start"):
                 st.session_state.is_active = True
                 st.session_state.obj = StudySession(subject=session_name)
                 st.session_state.obj.timer_start()
-                st.session_state.result = True
-                st.session_state.notdisable = False
+                # st.session_state.result = True
                 st.rerun()
             
-        
-        ### temp code 
-        
-        # if st.button("START"):
-        #     st.session_state.obj.timer_start()
-        #     st.session_state.result = "start"
-        # try:
-        #     if st.button("STOP"):
-        #         st.session_state.obj.timer_stop()
-        #         st.session_state.result = "stop"
-        # except TypeError:
-        #     st.write("Session Not Started Yet")
-            
-        # if st.session_state.result == "start":
-        #     st.write(f"Status : {st.session_state.result}")
-        
-        # elif st.session_state.result == "stop":
-        #     st.write(f"Status : {st.session_state.result}")
-        #     st.session_state.tracker.add_session(subjectsession=st.session_state.obj)
-        #     del st.session_state.obj
-        #     st.session_state.tracker.overwrite_file_save()
+    
 elif st.session_state.choice == "View Session Logs": #2
     st.write("#### View Session Logs")
     
