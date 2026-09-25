@@ -9,6 +9,9 @@ class StudySession: # this class make objects for every session
         self.start_time = None 
         self.end_time = None
         self.duration_ = None
+        self.pause_time = None
+        self.resume_time = None
+        self.pause_net_time = []
         
     def timer_start(self):
         print("Server Message <--  Timer Starts")
@@ -18,22 +21,52 @@ class StudySession: # this class make objects for every session
     def timer_stop(self):
         print("Server Message <-- Timer Stops")
         self.end_time = datetime.datetime.now()
-        self.duration_ = self.end_time - self.start_time
         
+        if self.pause_time is not None and (self.resume_time is None or self.resume_time < self.pause_time):
+            self.resume_time = self.end_time
+            self.pause_net_time.append((self.pause_time,self.resume_time))
+            
+        if len(self.pause_net_time) == 0:
+            self.duration_ = self.end_time - self.start_time
+            
+        else:
+            total_pause_time = datetime.timedelta()
+            for tup in self.pause_net_time:
+                start , stop = tup
+                total_pause_time += stop - start
+            self.duration_ = self.end_time - self.start_time - total_pause_time
     
     def duration(self):
            formated = str(self.duration_).split(".")
            return formated[0]
     
     def to_dict(self):
+        pause = []
+        if len(self.pause_net_time) == 0:
+            pause = []
+        else:
+            for tup in self.pause_net_time:
+                start, end = tup
+                pause.append((start.strftime("%H:%M:%S %d %B %Y"),end.strftime("%H:%M:%S %d %B %Y")))
         dic = {
             "subject" : self.subject,
             "start_time": self.start_time.strftime("%H:%M:%S %d %B %Y"),
             "end_time": self.end_time.strftime("%H:%M:%S %d %B %Y"),
-            "duration": str(self.duration_).split(".")[0]
+            "duration": str(self.duration_).split(".")[0],
+            "net_pause" : pause
+                
         }
         return dic
- 
+    
+    def time_pause(self):
+        self.pause_time = datetime.datetime.now()
+        
+    def time_resume(self):
+        self.resume_time = datetime.datetime.now()    
+        self.pause_net_time.append((self.pause_time,self.resume_time))
+        
+        
+     
 class Tracker:
     def __init__(self):
         self.session = []
@@ -73,6 +106,15 @@ class Tracker:
                 load = json.load(f)
                
             for rowindict in load:
+                if len(rowindict["net_pause"]) == 0:
+                    pause = []
+                else:
+                    pause = []
+                    for tup in rowindict["net_pause"]:
+                        start, end = tup
+                        start = datetime.datetime.strptime(start,"%H:%M:%S %d %B %Y")
+                        end = datetime.datetime.strptime(end,"%H:%M:%S %d %B %Y")
+                        pause.append((start,end))
                 data = StudySession(subject=rowindict["subject"])
                     
                 data.start_time = datetime.datetime.strptime(rowindict["start_time"],"%H:%M:%S %d %B %Y")
@@ -81,6 +123,10 @@ class Tracker:
                     
                 h,m,s = map(int,rowindict["duration"].split(":"))
                 data.duration_ = datetime.timedelta(hours=h,minutes=m,seconds=s)
+                
+                data.pause_net_time = pause
+                
+                    
 
                 self.session.append(data)
                 
@@ -130,16 +176,33 @@ def main():
             print()
             
             if user == 1:   
-                    print("------------------------------- 1. Add Session Window -------------------------------------")
-                    session_name = input("--> Enter Subject name : ").strip().capitalize()
-                    if session_name in ["b","back"]:
-                        print("Server Message <-- Back Operation Performed")
-                        continue
-                    session = StudySession(subject=session_name)
-                    session.timer_start()
-                    input("--> Do anything to stop the session: ")
-                    
-                    session.timer_stop()
+                print("------------------------------- 1. Add Session Window -------------------------------------")
+                session_name = input("--> Enter Subject name : ").strip().capitalize()
+                if session_name in ["b","back"]:
+                    print("Server Message <-- Back Operation Performed")
+                    continue
+                session = StudySession(subject=session_name)
+                session.timer_start()
+                run = True
+                while run:
+                    ask = input("--> Type s to stop the session : ").strip().lower()
+                        
+                    if ask == "p" or ask == "pause":
+                        session.time_pause()
+                        ask2 = input("--> Time Pause, r to Resume or s for stop : ").strip().lower()
+                        while ask2 not in ["r","resume","s","stop"]:
+                            ask2 = input("--> Time Pause, r to Resume or s for stop : ").strip().lower()
+                            continue
+                        if ask2 == "r" or ask2 == "resume":
+                            session.time_resume()
+                            continue
+                        else:
+                            session.timer_stop()
+                            run = False
+                    else:
+                        session.timer_stop()
+                        run = False
+                        
                     
                     #adding obj of class 1 into class2 
                     tracker.add_session(subjectsession=session)
@@ -191,7 +254,7 @@ def main():
                         continue
                     
                     print(f"Session Name : {search}")
-                    print(f"Total Duration : {tracker.target_duration(target_subject=search)}")
+                    print(f"Total Duration : {str(tracker.target_duration(target_subject=search)).split('.')[0]}")
                     print("x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x----x")
             elif user == 4:
                 print("------------------------------- 4. View Grand Duration Window -------------------------------------")

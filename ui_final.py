@@ -1,17 +1,17 @@
 import streamlit as st
 import datetime
-
+import json
 from study_session import StudySession, Tracker
 
 # current day
 def day():
     hour = datetime.datetime.now().hour
     
-    if 5<=hour<=12:
+    if 5<=hour<12:
         return "Good Morning"
-    elif 12<hour<=18:
+    elif 12<hour<18:
         return "Good Afternoon"
-    elif 18<hour<=24:
+    elif 18<hour<24:
         return "Good Evening"
     else:
         return "Late-Night Session"
@@ -26,7 +26,8 @@ if "choice" not in st.session_state:
     
 #Sidebar for Inputs (name)
 st.sidebar.header("Information")
-st.session_state.name = st.sidebar.text_input("Enter Name",placeholder= "Like Himanshu")
+st.session_state.name = st.sidebar.text_input("Enter Name",placeholder= "Like Himanshu",value="Dev Rohilla")
+
 if st.session_state.name:
     st.subheader(f"{day()}, {st.session_state.name}")
 
@@ -42,12 +43,14 @@ if st.session_state.first_time:
     st.session_state.first_time = False # hahahhah 
     
 #main option (menu)
-menu = st.radio("Choose one:",["Add New Session","View Session Logs","View Subject Duration","View Grand Duration"])
+# menu = st.radio("Choose one:",["Add New Session","View Session Logs","View Subject Duration","View Grand Duration"]) #tabs 
 
-if st.button("Submit"):  #button for submittion update chocie in every click
-    st.session_state.choice = menu
+# if st.button("Submit"):  #button for submittion update chocie in every click
+#     st.session_state.choice = menu
     
-if st.session_state.choice == "Add New Session": #1
+tab1,tab2,tab3,tab4 = st.tabs(["Add New Session","View Session Logs","View Subject Duration","View Grand Duration"])    
+
+with tab1: #1
     st.write("#### Add New Session")
     
     if "is_active" not in st.session_state:
@@ -60,14 +63,27 @@ if st.session_state.choice == "Add New Session": #1
 
     
     if session_name != "":
-         
-        # if 'result' not in st.session_state:        
-        #     st.session_state.result = True
+        if "pause" not in st.session_state:
+            st.session_state.pause = False
+            
+        if st.session_state.is_active:   
+            
+            if not st.session_state.pause:
+                st.write("Status : Running")
+                if st.button("Pause"):
+                    st.session_state.pause = True
+                    st.session_state.obj.time_pause()
+                    st.rerun()
+            else:
+                st.write("Status : Pause")
+                if st.button("Resume"): 
+                    st.session_state.pause = False
+                    st.session_state.obj.time_resume()
+                    st.rerun()
 
-        if st.session_state.is_active:
-            st.write("Status : Running ")
             if st.button("Stop"):
                 st.session_state.is_active = False
+                st.session_state.pause = False
                 st.session_state.obj.timer_stop()
                 st .session_state.tracker.add_session(subjectsession=st.session_state.obj)
                 del st.session_state.obj
@@ -87,7 +103,7 @@ if st.session_state.choice == "Add New Session": #1
                 st.rerun()
             
     
-elif st.session_state.choice == "View Session Logs": #2
+with tab2: #2
     st.write("#### View Session Logs")
     
     #index permanent variable
@@ -95,15 +111,29 @@ elif st.session_state.choice == "View Session Logs": #2
     for session in st.session_state.tracker.session:
         index +=1
         st.write(f"#### Session #{index}")
-        st.write(f"Session Name : {session.subject}")
-        st.write(f"Session Start Time : {session.start_time.strftime("%H:%M:%S, %d %B")}")
-        st.write(f"Session End Time : {session.end_time.strftime("%H:%M:%S, %d %B")}")
-        st.write(f"Session Duration : {str(session.duration_).split(".")[0]} Approx.")
-    
+        st.write(f"1. Session Name : {session.subject}")
+        st.write(f"2. Session Start Time : {session.start_time.strftime("%I:%M:%S, %d %B")}")
+        st.write(f"3. Session End Time : {session.end_time.strftime("%I:%M:%S, %d %B")}")
+        st.write(f"4. Session Duration : {str(session.duration_).split(".")[0]} Approx.")
+        
+        if len(session.pause_net_time) !=0:
+            pause_duraiton = datetime.timedelta()
+            st.write(f"5. Pause Status : ")
+            for tup in session.pause_net_time:
+                start , end = tup 
+                pause_duraiton+= end - start
+                start = start.strftime("%I:%M:%S %p %d %B")
+                end = end.strftime("%I:%M:%S %p %d %B")
+                st.write(f"Pause Time : {start}, Resume Time : {end}")
+            st.write(f"6. Pause Duration : {str(pause_duraiton).split(".")[0]}")
+        else:
+            st.write(f"5. Pause Status : None")
+            st.write(f"6. Pause Duration : None")
+        
     st.write(f"#### Total Session : {index}")
 
     
-elif st.session_state.choice == "View Subject Duration": #3
+with tab3: #3
     st.write("#### View Subject Duration")
     
     subject = []
@@ -118,7 +148,7 @@ elif st.session_state.choice == "View Subject Duration": #3
     st.write(f"Subject Name : {search1}")
     st.write(f"Total Duration : {str(st.session_state.tracker.target_duration(target_subject=search1)).split('.')[0]} Approx.")
         
-elif st.session_state.choice == "View Grand Duration": #4
+with tab4: #4
     st.write("#### View Grand Duration")
     
     index,duration = st.session_state.tracker.grand_duration()
